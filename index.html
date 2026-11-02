@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#17251f"><meta name="description" content="Baca Bangsawan Tidak Akan Kaya Tanpa Lepas Jubah — Andre W. Koreh">
+<title>Bangsawan Tidak Akan Kaya Tanpa Lepas Jubah | Andre W. Koreh</title>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com"><link rel="preconnect" href="https://cdn.jsdelivr.net">
+<style>
+:root{--bg:#17251f;--panel:#20352c;--gold:#d8b76b;--ink:#f7f2e8;--muted:#b9c5bd}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#30483b 0,#17251f 58%);color:var(--ink);font-family:Georgia,'Times New Roman',serif;min-height:100vh}
+header{padding:16px 18px 10px;text-align:center}header h1{font-size:clamp(18px,3vw,27px);margin:0;color:#f2d99a;font-weight:600}header p{margin:6px 0 0;color:var(--muted);font:13px Arial,sans-serif}
+.toolbar{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;padding:10px 12px}.btn{border:1px solid #718477;background:var(--panel);color:var(--ink);padding:9px 13px;border-radius:8px;font:13px Arial,sans-serif;cursor:pointer}.btn:active{transform:scale(.97)}.btn.primary{background:#b18c43;color:#17251f;border-color:#d8b76b;font-weight:bold}
+.layout{display:grid;grid-template-columns:minmax(0,1fr);max-width:1250px;margin:auto;padding:0 14px 24px;gap:12px}.reader-area{min-width:0}.stage{min-height:65vh;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8px 0 18px}.flip-shell{width:min(100%,950px);display:flex;justify-content:center;align-items:center}.flip-book{margin:auto}.page{background:#fff;overflow:hidden}.page canvas{display:block;width:100%;height:100%;object-fit:contain;background:#fff}.status{text-align:center;color:var(--muted);font:12px Arial,sans-serif;min-height:18px;padding:0 10px}.bottom-controls{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;padding:6px 0 18px;font:13px Arial,sans-serif;color:var(--muted)}input#pageInput{width:62px;background:#102019;color:white;border:1px solid #63796b;border-radius:6px;padding:8px;text-align:center}
+.drawer{background:rgba(32,53,44,.97);border:1px solid #53695b;border-radius:12px;padding:14px;max-height:55vh;overflow:auto;display:none}.drawer.open{display:block}.drawer h2{font-size:18px;color:#f2d99a;margin:0 0 10px}.toc-item{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid #405649;background:transparent;color:#f7f2e8;padding:9px 6px;cursor:pointer;font:14px Georgia,serif}.toc-item.sub{padding-left:22px;color:#d4dfd7;font-size:13px}.toc-item:hover{color:#f2d99a}.hint{color:#aebdb3;font:12px Arial,sans-serif;text-align:center;padding:0 14px 18px}
+@media(min-width:900px){.layout{grid-template-columns:270px minmax(0,1fr);align-items:start}.drawer{display:block;position:sticky;top:12px;max-height:78vh}.stage{min-height:70vh}}
+@media(max-width:600px){header{padding-top:12px}.stage{min-height:58vh;padding-top:0}.toolbar .btn{padding:8px 10px}.bottom-controls{gap:7px}}
+</style>
+</head>
+<body>
+<header><h1>Bangsawan Tidak Akan Kaya Tanpa Lepas Jubah</h1><p>Andre W. Koreh · The Lepas Jubah Series — Buku Kedua</p></header>
+<div class="toolbar">
+<button class="btn" id="tocToggle">☰ Daftar Isi</button><button class="btn" id="prev">‹ Sebelumnya</button><button class="btn primary" id="next">Berikutnya ›</button><button class="btn" id="zoomOut">−</button><button class="btn" id="zoomIn">+</button><button class="btn" id="full">⛶ Layar Penuh</button>
+</div>
+<main class="layout">
+<aside class="drawer" id="drawer"><h2>Daftar Isi</h2><div id="tocList">Memuat daftar isi…</div></aside>
+<section class="reader-area"><div class="stage"><div class="flip-shell"><div id="flipbook" class="flip-book"></div></div></div><div class="status" id="status">Menyiapkan buku…</div><div class="bottom-controls"><button class="btn" id="first">Halaman awal</button><span>Halaman</span><input id="pageInput" type="number" min="1" max="479" value="1"><span id="total">/ 479</span><button class="btn" id="go">Buka</button><button class="btn" id="last">Halaman akhir</button></div><div class="hint">Geser halaman ke kiri/kanan atau gunakan tombol navigasi. Tampilan menyesuaikan layar HP dan komputer.</div></section>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js"></script>
+<script>
+(()=>{
+ const PDF_URL='./book.pdf', TOTAL=479, W=439.4, H=652.1;
+ const status=document.getElementById('status'), input=document.getElementById('pageInput'), bookEl=document.getElementById('flipbook');
+ let pdfDoc=null, flip=null, rendered=new Set(), rendering=new Set(), zoom=1;
+ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+ function say(t){status.textContent=t}
+ async function renderPage(n){if(!pdfDoc||n<1||n>TOTAL||rendered.has(n)||rendering.has(n))return;rendering.add(n);try{const page=await pdfDoc.getPage(n);const host=bookEl.children[n-1];if(!host)return;const canvas=host.querySelector('canvas');const base=page.getViewport({scale:1});const targetW= Math.min(900,Math.max(480,host.clientWidth*1.5));const scale=targetW/base.width;const vp=page.getViewport({scale});canvas.width=Math.floor(vp.width);canvas.height=Math.floor(vp.height);const ctx=canvas.getContext('2d',{alpha:false});await page.render({canvasContext:ctx,viewport:vp}).promise;rendered.add(n);}catch(e){console.error(e)}finally{rendering.delete(n)}}
+ async function renderAround(index){const nums=[index+1,index+2,index,index-1,index+3,index-2];await Promise.all(nums.filter(n=>n>=1&&n<=TOTAL).map(renderPage));}
+ async function start(){try{say('Memuat PDF buku (48 MB)…');pdfDoc=await pdfjsLib.getDocument({url:PDF_URL}).promise;const count=pdfDoc.numPages;document.getElementById('total').textContent='/ '+count;input.max=count;
+ for(let i=1;i<=count;i++){const p=document.createElement('div');p.className='page';p.innerHTML='<canvas aria-label="Halaman '+i+'"></canvas>';bookEl.appendChild(p)}
+ flip=new St.PageFlip(bookEl,{width:W,height:H,size:'stretch',minWidth:260,maxWidth:900,minHeight:380,maxHeight:1300,showCover:true,usePortrait:true,mobileScrollSupport:true,drawShadow:true,maxShadowOpacity:.35, flippingTime:650,autoSize:true});
+ flip.loadFromHTML(bookEl.querySelectorAll('.page'));flip.on('flip',e=>{const n=e.data+1;input.value=n;say('Halaman '+n+' dari '+count);renderAround(e.data)});await renderAround(0);say('Buku siap dibaca · '+count+' halaman');
+ fetch('./toc.json').then(r=>r.json()).then(items=>{const list=document.getElementById('tocList');list.innerHTML='';items.forEach(it=>{const b=document.createElement('button');b.className='toc-item'+(it.level>1?' sub':'');b.textContent=it.title+'  ·  '+it.page;b.onclick=()=>{flip.flip(it.page-1);if(innerWidth<900)document.getElementById('drawer').classList.remove('open')};list.appendChild(b)})}).catch(()=>{document.getElementById('tocList').textContent='Daftar isi tidak dapat dimuat.'});
+ }catch(e){console.error(e);say('Gagal memuat buku. Pastikan file book.pdf tersedia di folder yang sama dengan situs ini.')}}
+ document.getElementById('next').onclick=()=>flip&&flip.flipNext();document.getElementById('prev').onclick=()=>flip&&flip.flipPrev();document.getElementById('first').onclick=()=>flip&&flip.flip(0);document.getElementById('last').onclick=()=>flip&&flip.flip(TOTAL-1);document.getElementById('go').onclick=()=>{if(flip){let n=Math.max(1,Math.min(TOTAL,Number(input.value)||1));flip.flip(n-1)}};input.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('go').click()});document.getElementById('tocToggle').onclick=()=>document.getElementById('drawer').classList.toggle('open');
+ document.getElementById('full').onclick=()=>{const el=document.querySelector('.reader-area');if(!document.fullscreenElement)el.requestFullscreen?.();else document.exitFullscreen?.()};
+ function setZoom(){bookEl.style.transform='scale('+zoom+')';bookEl.style.transformOrigin='center center'}document.getElementById('zoomIn').onclick=()=>{zoom=Math.min(1.35,zoom+.1);setZoom()};document.getElementById('zoomOut').onclick=()=>{zoom=Math.max(.75,zoom-.1);setZoom()};
+ start();
+})();
+</script>
+</body></html>
